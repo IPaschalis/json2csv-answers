@@ -4,7 +4,7 @@ from os.path import isfile, join
 import os
 import sys
 import json
-# from collections import defaultdict
+from collections import defaultdict
 
 
 def json_to_csv(file):
@@ -30,18 +30,29 @@ def json_to_csv(file):
 
 
 def csv_to_json(file):
-    return
-    #with open('Input/'+file, 'r', encoding='utf-8') as f:
-    #    csv_f = csv.DictReader(f)
-    #    rows = list(csv_f)
-    #    row = {}
-    #    for item in rows:
-    #        if((item['Label'] == ""))
-    #
+    with open('Input/'+file, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        answer_dict = defaultdict(lambda: [])  # dictionary to save to json
 
-    #with open('Output/answers.json', 'w+', encoding='utf-8') as jsonfile:
-    #        json.dump(row, jsonfile, indent=2)
+        prev_label = ''  # used to hold the value of previous label for lists
+        for row in reader:
+            label = row['Label'] if row['Label'] != '' else prev_label
+            answer_dict[label].append(
+                row['Final_Message'] if row['Final_Message'] != '' else row['Original_Message']
+            )
+            prev_label = label
 
+        for k, v in answer_dict.items():
+            if len(v) == 1:
+                answer_dict[k] = v[0]
+
+        with open('Output/answers.json', 'w+', encoding='utf-8') as json_f:
+            json.dump(answer_dict, json_f, indent=4)
+
+
+for directory in ['./Input', './Output']:
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 input_files = [f for f in listdir("./Input") if isfile(join("./Input", f))]
 if len(input_files) != 1:
