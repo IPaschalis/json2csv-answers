@@ -12,6 +12,8 @@ def json_to_csv(file):
         json_f = json.load(f)
 
     with open('Output/answers.csv', 'w+', encoding='utf-8', newline='') as csvfile:
+        # write BOM in the first row
+        csvfile.write('\ufeff\n')
         fieldnames = ['Label', 'Original_Message', 'Final_Message', 'Comments']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -19,7 +21,7 @@ def json_to_csv(file):
         for header, text in json_f.items():
             # Reduction condition 1 (value is nested list)
             if type(text) is list:
-                # write the first row
+                # labels
                 writer.writerow({'Label': header, 'Original_Message': text[0].replace('\n', '\\n')})
                 # rest of the items in separate rows
                 for sub_item in text[1:]:
@@ -31,6 +33,7 @@ def json_to_csv(file):
 
 def csv_to_json(file):
     with open('Input/'+file, 'r', encoding='utf-8') as f:
+        next(f)  # skip the line with the BOM
         reader = csv.DictReader(f)
         answer_dict = defaultdict(lambda: [])  # dictionary to save to json
 
